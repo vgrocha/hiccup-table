@@ -2,9 +2,16 @@
 
 A library to easily generate html tables from clojure data structures with the possibility of defining the tags atributes as functions/maps.
 
+## Instalation
+Just add
+
+    [hiccup-table "0.1.0"]
+
+to your project dependencies
+
 ## Usage
 
-If you want to generate a table with the first row as header you can use 'hiccup.table/to-table1d'. It generates a hiccup tag structure of a table with the header row 'x-labels' and the 'data'.
+If you want to generate a table with the first row as header you can use ```(fn hiccup.table/to-table1d [data x-labels])```. It generates a hiccup tag structure of a table with the header row 'x-labels' and the 'data'.
 The header row is defined by 'x-labels', which can be a an array-map (must be ordered, for it will be the columns order) in the format
  
     (array-map :data-key "data label" ...)
