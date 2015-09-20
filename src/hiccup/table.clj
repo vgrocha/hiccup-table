@@ -65,19 +65,19 @@ OR
                       (partition 2 x-labels)
                       x-labels)]
        [:table
-        (when (map? table-attrs) table-attrs)
+        table-attrs
         [:thead
-         (when (map? thead-attrs) thead-attrs)
+         thead-attrs
          (for [[label-key label] (seq x-labels)]
            [:th
             (cond (map? th-fn) th-fn
                   (fn? th-fn) (th-fn label-key))
             label])]
         [:tbody
-         (when (map? tbody-attrs) tbody-attrs)
+         tbody-attrs
          (for [row data]
            [:tr
-            (when (map? tr-attrs) tr-attrs)
+            tr-attrs
             (for [[label-key label] x-labels]
               (let [val (row label-key)]
                 [:td
