@@ -64,21 +64,23 @@
 
 
 (deftest table1d-attrs-test
-  (let [attrs-fns {:table-attrs {:class "mytable"}
-                   :thead-attrs {:id "mythead"}
-                   :tbody-attrs {:id "mytbody"}
-                   :th-attrs (fn [label-key _] {:class (name label-key)})
-                   :data-tr-attrs {:class "trattrs"}
-                   :data-td-attrs (fn [label-key val]
-                                    (case label-key
-                                      :height (if (<= 180 val)
-                                                {:class "above-avg"}
-                                                {:class "below-avg"}) nil))
-                   :val-fn (fn [label-key val]
-                             (if (= :name label-key)
-                               [:a {:href (str "/" val)} val]
-                               val))}]
-                               
+  (let [common-attrs-fns {:table-attrs {:class "mytable"}
+                          :thead-attrs {:id "mythead"}
+                          :tbody-attrs {:id "mytbody"}
+                          :data-tr-attrs {:class "trattrs"}
+                          } ]
+    (let [attrs-fns (into common-attrs-fns
+                          {:th-attrs (fn [label-key _] {:class (name label-key)})
+                           :data-td-attrs (fn [label-key val]
+                                            (case label-key
+                                              :height (if (<= 180 val)
+                                                        {:class "above-avg"}
+                                                        {:class "below-avg"}) nil))
+                           :val-fn (fn [label-key val]
+                                     (if (= :name label-key)
+                                       [:a {:href (str "/" val)} val]
+                                       val))})])
+    
     (is (= (hiccup.table/to-table1d
             (list {:age 21 :name "John" :height 179}
                   {:age 22 :name "Wilfred" :height 182})
