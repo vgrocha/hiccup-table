@@ -1,5 +1,19 @@
 (ns hiccup.table)
 
+(defn extract-attr [attr-blob label-key value]
+  (cond (map? attr-blob) attr-blob
+        (fn? attr-blob) (attr-blob label-key value)))
+
+(defn- render-row [cell-type x-labels tr-attrs cell-attr td-fn row]
+  [:tr
+   tr-attrs
+   (map (fn [[label-key label]]
+          (let [value (row label-key)]
+            [cell-type
+             (extract-attr cell-attr label-key value)
+             (td-fn value)]))
+        x-labels)])
+
 (defn to-table1d
   "Generates a hiccup tag structure of a table with the header row and the 'data'.
    The header row is defined by the order set in x-labels with the label.
@@ -80,9 +94,15 @@ OR
             tr-attrs
             (for [[label-key label] x-labels]
               (let [val (row label-key)]
-                [:td
-                 (cond (map? td-fn) td-fn
-                       (fn? td-fn) (td-fn label-key val))
-                 (if (fn? val-fn)
-                   (val-fn label-key val)
-                   val)]))])]])))
+                (build-tag :td
+                           td-fn
+                           label-key
+                           (if (fn? val-fn)
+                             (val-fn label-key val)
+                             val))))])]])))
+
+(defn- build-tag [tag attr-blob label-key value]
+  [tag
+   (cond (map? attr-blob) attr-blob
+         (fn? attr-blob) (attr-blob label-key val))
+   value])
