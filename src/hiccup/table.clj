@@ -75,12 +75,12 @@ OR
   ([data x-labels {:keys [table-attrs
                           thead-attrs
                           tbody-attrs
-                          th-fn
-                          tr-attrs
-                          td-fn
-                          val-fn]}]
+                          th-attrs
+                          data-tr-attrs
+                          data-td-attrs
+                          data-value-transform]}]
      {:pre [(every? (some-fn nil? map? fn?)
-                    [table-attrs thead-attrs tbody-attrs th-fn tr-attrs td-fn val-fn])]}
+                    [table-attrs thead-attrs tbody-attrs th-attrs data-tr-attrs data-td-attrs data-value-transform])]}
      (let [x-labels (if (vector? x-labels)
                       (partition 2 x-labels)
                       x-labels)]
@@ -88,27 +88,13 @@ OR
         table-attrs
         [:thead
          thead-attrs
-         (for [[label-key label] (seq x-labels)]
-           [:th
-            (cond (map? th-fn) th-fn
-                  (fn? th-fn) (th-fn label-key))
-            label])]
+         (render-row :th
+                     x-labels
+                     nil
+                     th-attrs
+                     nil
+                     (into {} (map vec x-labels)))]
         [:tbody
          tbody-attrs
-         (for [row data]
-           [:tr
-            tr-attrs
-            (for [[label-key label] x-labels]
-              (let [val (row label-key)]
-                (build-tag :td
-                           td-fn
-                           label-key
-                           (if (fn? val-fn)
-                             (val-fn label-key val)
-                             val))))])]])))
-
-(defn- build-tag [tag attr-blob label-key value]
-  [tag
-   (cond (map? attr-blob) attr-blob
-         (fn? attr-blob) (attr-blob label-key val))
-   value])
+         (map (partial render-row :td x-labels data-tr-attrs data-td-attrs data-value-transform)
+              data)]])))
