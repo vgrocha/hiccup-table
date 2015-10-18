@@ -67,8 +67,29 @@
   (let [common-attrs-fns {:table-attrs {:class "mytable"}
                           :thead-attrs {:id "mythead"}
                           :tbody-attrs {:id "mytbody"}
-                          :data-tr-attrs {:class "trattrs"}
-                          } ]
+                          :data-tr-attrs {:class "trattrs"}}]
+
+    ;;first lest test with some attrs
+    (let [attrs-fns (into common-attrs-fns
+                          {:th-attrs {:class "just-th"}
+                           :data-td-attrs {:class "just-td"}
+                           :val-fn nil})]
+      (is (= (hiccup.table/to-table1d
+              (list {:age 21 :name "John" :height 179}
+                    {:age 22 :name "Wilfred" :height 182})
+              [:name "Name" :age "Age" :height "Height"]
+              attrs-fns)
+             
+             '[:table {:class "mytable"}
+               [:thead {:id "mythead"}
+                [:tr nil ([:th {:class "just-th"} "Name"]
+                          [:th {:class "just-th"} "Age"]
+                          [:th {:class "just-th"} "Height"])]]
+               [:tbody {:id "mytbody"}
+                ([:tr {:class "trattrs"} ([:td {:class "just-td"} "John"] [:td {:class "just-td"} 21] [:td {:class "just-td"} 179])]
+                 [:tr {:class "trattrs"} ([:td {:class "just-td"} "Wilfred"] [:td {:class "just-td"} 22] [:td {:class "just-td"} 182])])]])))
+
+    ;then with some Fns
     (let [attrs-fns (into common-attrs-fns
                           {:th-attrs (fn [label-key _] {:class (name label-key)})
                            :data-td-attrs (fn [label-key val]
@@ -79,19 +100,18 @@
                            :val-fn (fn [label-key val]
                                      (if (= :name label-key)
                                        [:a {:href (str "/" val)} val]
-                                       val))})])
-    
-    (is (= (hiccup.table/to-table1d
-            (list {:age 21 :name "John" :height 179}
-                  {:age 22 :name "Wilfred" :height 182})
-            [:name "Name" :age "Age" :height "Height"]
-            attrs-fns)
-           
-           '[:table {:class "mytable"}
-             [:thead {:id "mythead"}
-              [:tr nil ([:th {:class "name"} "Name"]
-                        [:th {:class "age"} "Age"]
-                        [:th {:class "height"} "Height"])]]
-             [:tbody {:id "mytbody"}
-              ([:tr {:class "trattrs"} ([:td nil "John"] [:td nil 21] [:td {:class "below-avg"} 179])]
-               [:tr {:class "trattrs"} ([:td nil "Wilfred"] [:td nil 22] [:td {:class "above-avg"} 182])])]]))))
+                                       val))})]
+      (is (= (hiccup.table/to-table1d
+              (list {:age 21 :name "John" :height 179}
+                    {:age 22 :name "Wilfred" :height 182})
+              [:name "Name" :age "Age" :height "Height"]
+              attrs-fns)
+             
+             '[:table {:class "mytable"}
+               [:thead {:id "mythead"}
+                [:tr nil ([:th {:class "name"} "Name"]
+                          [:th {:class "age"} "Age"]
+                          [:th {:class "height"} "Height"])]]
+               [:tbody {:id "mytbody"}
+                ([:tr {:class "trattrs"} ([:td nil "John"] [:td nil 21] [:td {:class "below-avg"} 179])]
+                 [:tr {:class "trattrs"} ([:td nil "Wilfred"] [:td nil 22] [:td {:class "above-avg"} 182])])]])))))
