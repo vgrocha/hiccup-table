@@ -3,16 +3,41 @@
             [hiccup.table :refer :all]))
 
 (deftest extract-attr-test
-  (is (= :asd
-         (extract-attr (fn [a b] a) :asd 1)))
-  (is (= 1
-       (extract-attr (fn [a b] b) :asd 1)))
-  (is (= {:class "asd-1"}
-         (extract-attr (fn [key value]
-                         {:class (clojure.string/join "-" [(name key) value])})
-                       :asd
-                       1))))
+  (let [extract-attr #'hiccup.table/extract-attr]
+    (is (= :asd
+           (extract-attr (fn [a b] a) :asd 1)))
+    (is (= 1
+           (extract-attr (fn [a b] b) :asd 1)))
+    (is (= {:class "asd-1"}
+           (extract-attr (fn [key value]
+                           {:class (clojure.string/join "-" [(name key) value])})
+                         :asd
+                         1)))))
 
+(deftest render-row-test
+  (let [render-row #'hiccup.table/render-row]
+    (is (= [:tr nil
+            '([:td nil "value 20"]
+              [:td nil "value 15"]
+              [:td nil "value 10"])]
+           (render-row :td
+             [[:a "A header"] [:b "B header"] [:c "C header"]]
+             nil
+             nil
+             nil
+             {:c "value 10" :b "value 15" :a "value 20"})))
+    
+    (is (= [:tr {:class "test-me"}
+            '([:td {:class "a-value 20"} "VALUE 20"]
+              [:td {:class "b-value 15"} "VALUE 15"]
+              [:td {:class "c-value 10"} "VALUE 10"])]
+           (#'hiccup.table/render-row :td
+                                      [[:a "This is A"] [:b "This is B"] [:c "This is C"]]
+                                      {:class "test-me"}
+                                      (fn [label-key value]
+                                        {:class (clojure.string/join "-" [(name label-key) value])})
+                                      clojure.string/upper-case
+                                      {:c "value 10" :b "value 15" :a "value 20"})))))
 
 (deftest table1d-test
   (is (= (hiccup.table/to-table1d (list {:age 21 :name "John" :height 180}
