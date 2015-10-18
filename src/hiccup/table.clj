@@ -1,17 +1,23 @@
 (ns hiccup.table)
 
-(defn extract-attr [attr-blob label-key value]
-  (cond (map? attr-blob) attr-blob
-        (fn? attr-blob) (attr-blob label-key value)))
+(defn- extract-attr [attr-blob label-key value]
+  (cond (fn? attr-blob) (attr-blob label-key value)
+        :true ;;(map? attr-blob)
+        attr-blob))
 
-(defn- render-row [cell-type x-labels tr-attrs cell-attr td-fn row]
+(defn- if-nnil-apply [f value]
+  (if (nil? f)
+    value
+    (f value)))
+
+(defn- render-row [cell-type x-labels tr-attrs cell-attr transform-value-fn row]
   [:tr
    tr-attrs
    (map (fn [[label-key label]]
           (let [value (row label-key)]
             [cell-type
              (extract-attr cell-attr label-key value)
-             (td-fn value)]))
+             (if-nnil-apply transform-value-fn value)]))
         x-labels)])
 
 (defn to-table1d
