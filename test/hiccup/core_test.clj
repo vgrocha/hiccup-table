@@ -36,7 +36,7 @@
                                       {:class "test-me"}
                                       (fn [label-key value]
                                         {:class (clojure.string/join "-" [(name label-key) value])})
-                                      clojure.string/upper-case
+                                      (fn [_ val] (clojure.string/upper-case val))
                                       {:c "value 10" :b "value 15" :a "value 20"})))))
 
 (deftest table1d-test
@@ -97,21 +97,23 @@
                                               :height (if (<= 180 val)
                                                         {:class "above-avg"}
                                                         {:class "below-avg"}) nil))
-                           :val-fn (fn [label-key val]
-                                     (if (= :name label-key)
-                                       [:a {:href (str "/" val)} val]
-                                       val))})]
+                           :data-value-transform (fn [label-key val]
+                                                   (if (= :name label-key)
+                                                     [:a {:href (str "/" val)} val]
+                                                     val))})]
       (is (= (hiccup.table/to-table1d
               (list {:age 21 :name "John" :height 179}
                     {:age 22 :name "Wilfred" :height 182})
               [:name "Name" :age "Age" :height "Height"]
               attrs-fns)
-             
+
              '[:table {:class "mytable"}
                [:thead {:id "mythead"}
-                [:tr nil ([:th {:class "name"} "Name"]
-                          [:th {:class "age"} "Age"]
-                          [:th {:class "height"} "Height"])]]
+                [:tr nil ([:th {:class "name"} "Name"] [:th {:class "age"} "Age"] [:th {:class "height"} "Height"])]]
                [:tbody {:id "mytbody"}
-                ([:tr {:class "trattrs"} ([:td nil "John"] [:td nil 21] [:td {:class "below-avg"} 179])]
-                 [:tr {:class "trattrs"} ([:td nil "Wilfred"] [:td nil 22] [:td {:class "above-avg"} 182])])]])))))
+                ([:tr {:class "trattrs"} ([:td nil [:a {:href "/John"} "John"]]
+                                          [:td nil 21]
+                                          [:td {:class "below-avg"} 179])]
+                 [:tr {:class "trattrs"} ([:td nil [:a {:href "/Wilfred"} "Wilfred"]]
+                                          [:td nil 22]
+                                          [:td {:class "above-avg"} 182])])]])))))
