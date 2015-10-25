@@ -1,4 +1,4 @@
-(defproject hiccup-table "0.1.0"
+(defproject hiccup-table "0.2.0"
   :description "A library to easily generate html tables from clojure data structures with the possibility of defining the tags atributes as functions/maps."
   :url "https://github.com/vgrocha/hiccup-table"
   :license {:name "Eclipse Public License"
