@@ -11,14 +11,17 @@
     (f value)))
 
 (defn- render-row [cell-type x-labels tr-attrs cell-attr transform-value-fn row]
-  [:tr
-   tr-attrs
-   (map (fn [[label-key label]]
-          (let [value (row label-key)]
-            [cell-type
-             (extract-attr cell-attr label-key value)
-             (if-nnil-apply transform-value-fn value)]))
-        x-labels)])
+  (let [transform-value-fn (if (nil? transform-value-fn)
+                             (fn [_ val] val)
+                             transform-value-fn)]
+    [:tr
+     tr-attrs
+     (map (fn [[label-key label]]
+            (let [value (row label-key)]
+              [cell-type
+               (extract-attr cell-attr label-key value)
+               (transform-value-fn label-key value)]))
+          x-labels)]))
 
 (defn to-table1d
   "Generates a hiccup tag structure of a table with the header row and the 'data'.
