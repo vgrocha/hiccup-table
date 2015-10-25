@@ -50,29 +50,50 @@ OR
           [:tr nil ([:td nil \"Jack\"] [:td nil 23] [:td nil 179])]
           [:tr nil ([:td nil \"Daniel\"] [:td nil 24] [:td nil 165])])]]
 
-  => (let [attrs-fns {:table-attrs {:class \"mytable\"}
-                      :thead-attrs {:id \"mythead\"}
-                      :tbody-attrs {:id \"mytbody\"}
-                      :th-fn (fn [label-key] {:class (subs (str label-key) 1)})
-                      :tr-attrs {:class \"trattrs\"}
-                      :td-fn (fn [label-key val]
-                               (case label-key
-                                 :height (if (<= 180 val)
-                                           {:class \"above-avg\"}
-                                           {:class \"below-avg\"}) nil))
-                      :val-fn (fn [label-key val]
-                                (if (= :name label-key)
-                                  [:a {:href (str \"/\" val)} val]
-                                  val))}]
-       (hiccup.table/to-table1d (list {:age 21 :name \"John\" :height 180}
-                                      {:age 22 :name \"Wilfred\" :height 182})
-                                [:name \"Name\" :age \"Age\" :height \"Height\"] attrs-fns))
-; => [:table {:class \"mytable\"}
-     [:thead {:id \"mythead\"}
-      ([:th {:class \"name\"} \"Name\"] [:th {:class \"age\"} \"Age\"] [:th {:class \"height\"} \"Height\"])]
-     [:tbody {:id \"mytbody\"}
-      ([:tr {:class \"trattrs\"} ([:td nil [:a {:href \"/John\"} \"John\"]] [:td nil 21] [:td {:class \"above-avg\"} 180])]
-       [:tr {:class \"trattrs\"} ([:td nil [:a {:href \"/Wilfred\"} \"Wilfred\"]] [:td nil 22] [:td {:class \"above-avg\"} 182])])]]"
+  For more setting table attributes, one can use some attributes as fns and/or maps. If the value is nil, no attribute will be set.
+     - table-attrs   : map with attributes to <table>
+     - thead-attrs   : map with attributes for <thead>
+     - tbody-attrs   : map with attributes for the <tbody>
+     - th-attrs      : map with attributes for <th>
+                     , or a (fn [label-key value]
+                               where 'label-key' is the column label key
+                               and 'value' is the content inside the <th> </th> tags)
+     - data-tr-attrs : map with attributes for the <tr>
+     - data-td-attrs : map with attributes for <td>
+                     , or a (fn [label-key value]
+                               where 'label-key' is the column label key
+                               and 'value' is the content inside the <td> </td> tags)
+     - data-value-transform: a (fn [value]) that will be applied to transform the content
+                             of <td> </td>
+                             if this key is nil, the value will be the original one
+                             from data
+  
+  
+  => (let [attr-fns {:table-attrs {:class \"mytable\"}
+                  :thead-attrs {:id \"mythead\"}
+                  :tbody-attrs {:id \"mytbody\"}
+                  :data-tr-attrs {:class \"trattrs\"}
+                  :th-attrs (fn [label-key _] {:class (name label-key)})
+                  :data-td-attrs (fn [label-key val]
+                                   (case label-key
+                                     :height (if (<= 180 val)
+                                               {:class \"above-avg\"}
+                                               {:class \"below-avg\"}) nil))
+                  :val-fn (fn [label-key val]
+                            (if (= :name label-key)
+                              [:a {:href (str \"/\" val)} val]
+                              val))}]
+    (hiccup.table/to-table1d
+              (list {:age 21 :name \"John\" :height 179}
+                    {:age 22 :name \"Wilfred\" :height 182})
+              [:name \"Name\" :age \"Age\" :height \"Height\"]
+              attrs-fns))
+  => [:table {:class \"mytable\"}
+       [:thead {:id \"mythead\"}
+        [:tr nil ([:th {:class \"name\"} \"Name\"] [:th {:class \"age\"} \"Age\"] [:th {:class \"height\"} \"Height\"])]]
+       [:tbody {:id \"mytbody\"}
+        ([:tr {:class \"trattrs\"} ([:td nil \"John\"] [:td nil 21] [:td {:class \"below-avg\"} 179])]
+  [:tr {:class \"trattrs\"} ([:td nil \"Wilfred\"] [:td nil 22] [:td {:class \"above-avg\"} 182])])]]"
   ([data x-labels]
      (to-table1d data x-labels nil))
   ([data x-labels {:keys [table-attrs
