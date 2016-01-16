@@ -1,9 +1,10 @@
 (ns hiccup.table)
 
+;;TODO: added tr-properties with map-indexed
+
 (defn- extract-attr [attr-blob label-key value]
   (cond (fn? attr-blob) (attr-blob label-key value)
-        :true ;;(map? attr-blob)
-        attr-blob))
+        :true attr-blob))
 
 (defn- if-nnil-apply [f value]
   (if (nil? f)
