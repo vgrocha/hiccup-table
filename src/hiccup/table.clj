@@ -42,13 +42,14 @@ OR
                               [:name \"Name\" :age \"Age\" :height \"Height\"]) 
 
   ;=> [:table nil
-        [:thead nil
-         ([:th nil \"Name\"] [:th nil \"Age\"] [:th nil \"Height\"])]
-        [:tbody nil
-         ([:tr nil ([:td nil \"John\"] [:td nil 21] [:td nil 180])]
+       [:thead nil
+        [:tr nil ([:th nil \"Name\"] [:th nil \"Age\"] [:th nil \"Height\"])]]
+       [:tbody nil
+        '([:tr nil ([:td nil \"John\"] [:td nil 21] [:td nil 180])]
           [:tr nil ([:td nil \"Wilfred\"] [:td nil 22] [:td nil 182])]
           [:tr nil ([:td nil \"Jack\"] [:td nil 23] [:td nil 179])]
           [:tr nil ([:td nil \"Daniel\"] [:td nil 24] [:td nil 165])])]]
+  
 
   For more setting table attributes, one can use some attributes as fns and/or maps. If the value is nil, no attribute will be set.
      - table-attrs   : map with attributes to <table>
@@ -70,30 +71,32 @@ OR
   
   
   => (let [attr-fns {:table-attrs {:class \"mytable\"}
-                  :thead-attrs {:id \"mythead\"}
-                  :tbody-attrs {:id \"mytbody\"}
-                  :data-tr-attrs {:class \"trattrs\"}
-                  :th-attrs (fn [label-key _] {:class (name label-key)})
-                  :data-td-attrs (fn [label-key val]
-                                   (case label-key
-                                     :height (if (<= 180 val)
-                                               {:class \"above-avg\"}
-                                               {:class \"below-avg\"}) nil))
-                  :val-fn (fn [label-key val]
-                            (if (= :name label-key)
-                              [:a {:href (str \"/\" val)} val]
-                              val))}]
-    (hiccup.table/to-table1d
-              (list {:age 21 :name \"John\" :height 179}
-                    {:age 22 :name \"Wilfred\" :height 182})
-              [:name \"Name\" :age \"Age\" :height \"Height\"]
-              attrs-fns))
-  => [:table {:class \"mytable\"}
+                     :thead-attrs {:id \"mythead\"}
+                     :tbody-attrs {:id \"mytbody\"}
+                     :data-tr-attrs {:class \"trattrs\"}
+                     :th-attrs (fn [label-key _] {:class (name label-key)})
+                     :data-td-attrs (fn [label-key val]
+                                      (case label-key
+                                        :height (if (<= 180 val)
+                                                  {:class \"above-avg\"}
+                                                  {:class \"below-avg\"}) nil))
+                     :data-value-transform (fn [label-key val]
+                                             (if (= :name label-key)
+                                               [:a {:href (str \"/\" val)} val]
+                                               val))}]
+       (hiccup.table/to-table1d
+        '({:age 21 :name \"John\" :height 179}
+          {:age 22 :name \"Wilfred\" :height 182})
+        [:name \"Name\" :age \"Age\" :height \"Height\"]
+        attr-fns))
+
+  ;=> [:table {:class \"mytable\"}
        [:thead {:id \"mythead\"}
         [:tr nil ([:th {:class \"name\"} \"Name\"] [:th {:class \"age\"} \"Age\"] [:th {:class \"height\"} \"Height\"])]]
        [:tbody {:id \"mytbody\"}
-        ([:tr {:class \"trattrs\"} ([:td nil \"John\"] [:td nil 21] [:td {:class \"below-avg\"} 179])]
-  [:tr {:class \"trattrs\"} ([:td nil \"Wilfred\"] [:td nil 22] [:td {:class \"above-avg\"} 182])])]]"
+        ([:tr {:class \"trattrs\"} ([:td nil [:a {:href \"/John\"} \"John\"]] [:td nil 21] [:td {:class \"below-avg\"} 179])]
+         [:tr {:class \"trattrs\"} ([:td nil [:a {:href \"/Wilfred\"} \"Wilfred\"]] [:td nil 22] [:td {:class \"above-avg\"} 182])])]]"
+  
   ([data x-labels]
      (to-table1d data x-labels nil))
   ([data x-labels {:keys [table-attrs
